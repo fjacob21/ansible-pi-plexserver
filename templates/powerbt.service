@@ -1,0 +1,8 @@
+[Unit]
+Description=powerbt
+
+[Service]
+ExecStart=/powerbt/main.py
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,164 @@
+---
+- hosts: server
+  vars:
+    http_port: 80
+    max_clients: 200
+  remote_user: pi
+  tasks:
+  - name: Install glusterfs-client
+    become: yes
+    apt:
+      name: glusterfs-client
+      update_cache: yes
+      state: latest
+
+  - name: Create gv0 mount folder
+    become: yes
+    file:
+      path: /mnt/gv0
+      state: directory
+      mode: '0777'
+  
+  - name: Mount glusterfs
+    become: yes
+    mount:
+      path: /mnt/gv0
+      src: picluster1-pi1:/gv0
+      fstype: glusterfs
+      state: mounted
+  
+  - name: Install apt-transport-https
+    become: yes
+    apt:
+      name: apt-transport-https
+      state: latest
+  
+  - name: Install ca-certificates
+    become: yes
+    apt:
+      name: ca-certificates
+      state: latest
+  
+  - name: Install software-properties-common
+    become: yes
+    apt:
+      name: software-properties-common
+      state: latest
+  
+  - name: Instal Docker
+    become: yes
+    shell: curl -fsSL get.docker.com -o get-docker.sh && sh get-docker.sh
+  
+  - name: adding existing user pi to group docker
+    become: yes
+    user:
+      name: 'pi'
+      groups: docker
+      append: yes
+  
+  - name: Enable service docker
+    become: yes
+    service:
+      name: docker
+      enabled: yes
+  
+  - name: Start service docker
+    become: yes
+    service:
+      name: docker
+      state: started
+
+  - name: Install python3
+    become: yes
+    apt:
+      name: python3
+      state: latest
+  
+  - name: Install python3-pip
+    become: yes
+    apt:
+      name: python3-pip
+      state: latest
+
+  - name: Create plex docker folder
+    become: yes
+    file:
+      path: /plex
+      state: directory
+      mode: '0777'
+
+  - name: Clone the plex docker repo
+    become: yes
+    git:
+      repo: https://github.com/fjacob21/plex-docker.git
+      dest: /plex
+
+  - name: Create powersw folder
+    become: yes
+    file:
+      path: /powersw
+      state: directory
+      mode: '0777'
+
+  - name: Clone the powersw repo
+    become: yes
+    git:
+      repo: https://github.com/fjacob21/powersw.git
+      dest: /powersw
+  
+  - name: Instal powersw python requirements
+    become: yes
+    shell: pip3 install -r requirements.txt
+    args:
+      chdir: /powersw
+  
+  - name: Copy the powersw systemd service file
+    become: yes
+    copy:
+      src: templates/powersw.service
+      dest: /usr/lib/systemd/system/powersw.service
+      mode: '0644'
+  
+  - name: Enable service powersw
+    become: yes
+    service:
+      name: powersw
+      enabled: yes
+  
+  - name: Start service powersw
+    become: yes
+    service:
+      name: powersw
+      state: started
+  
+  - name: Create powerbt folder
+    become: yes
+    file:
+      path: /powerbt
+      state: directory
+      mode: '0777'
+
+  - name: Clone the powerbt repo
+    become: yes
+    git:
+      repo: https://github.com/fjacob21/powerbt.git
+      dest: /powerbt
+  
+  - name: Copy the powerbt systemd service file
+    become: yes
+    copy:
+      src: templates/powerbt.service
+      dest: /usr/lib/systemd/system/powerbt.service
+      mode: '0644'
+  
+  - name: Enable service powerbt
+    become: yes
+    service:
+      name: powerbt
+      enabled: yes
+  
+  - name: Start service powerbt
+    become: yes
+    service:
+      name: powerbt
+      state: started

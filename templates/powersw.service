@@ -1,0 +1,8 @@
+[Unit]
+Description=powersw
+
+[Service]
+ExecStart=/powersw/main.py
+
+[Install]
+WantedBy=multi-user.target
